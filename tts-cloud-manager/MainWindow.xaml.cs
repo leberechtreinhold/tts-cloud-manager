@@ -1,0 +1,181 @@
+﻿using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
+using Microsoft.Win32;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
+using Newtonsoft.Json.Linq;
+using Steamworks;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace tts_cloud_manager
+{
+
+    public class CloudItem
+    {
+        // Name of the object itself, the name of the file or folder
+        public string name { get; set; }
+        // Full path of the folder containing the file, or the path 
+        // to the folder including itself
+        public string fullpath { get; set; }
+        public string cloud_name { get; set; }
+        public CloudData? data { get; set; }
+        public IList<CloudItem> children { get; set; }
+
+        public CloudItem(string path, string parentname)
+        {
+            name = parentname;
+            fullpath = path;
+            children = new List<CloudItem>();
+        }
+
+        public void AddChildren(CloudItem child)
+        {
+            children.Add(child);
+        }
+    }
+
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : MetroWindow, INotifyPropertyChanged
+    {
+
+        private List<CloudItem> m_folders;
+        public List<CloudItem> Folders
+        {
+            get { return m_folders; }
+            set
+            {
+                m_folders = value;
+                NotifiyPropertyChanged("Folders");
+            }
+        }
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            this.DataContext = this;
+        }
+
+        void NotifiyPropertyChanged(string property)
+        {
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(property));
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        
+        private void GetData()
+        {
+            CloudManager.ConnectToSteam();
+            UpdateTree();
+        }
+
+        private void UpdateTree()
+        {
+            Folders = CloudManager.GetCloudData();
+        }
+
+        private async void GetData_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                GetData();
+            }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Error", ex.Message);
+            }
+        }
+
+        private async Task UploadData()
+        {
+            var obj = TreeCloud.SelectedItem as CloudItem;
+            if (obj == null)
+            {
+                throw new Exception("Please, select a folder first.");
+            }
+            if (obj.data != null)
+            {
+                throw new Exception("You need to select a folder, not a file.");
+            }
+            var upload_folder = obj.fullpath;
+
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Multiselect = true;
+            dlg.FileName = "Asset"; // Default file name
+
+            bool? result = dlg.ShowDialog();
+
+            if (result == null || result == false)
+            {
+                return;
+            }
+
+            var progress_bar = await this.ShowProgressAsync("Uploading", "Please wait...");
+            IProgress<double> progress = new Progress<double>(value => progress_bar.SetProgress(value));
+            await CloudManager.UploadFiles(upload_folder, dlg.FileNames, progress);
+            UpdateTree();
+            await progress_bar.CloseAsync();
+        }
+
+        private async void UploadData_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                await UploadData();
+            }
+            catch (Exception ex)
+            {
+                if (ex is AggregateException)
+                {
+                    ex = ((AggregateException)ex).InnerException;
+                }
+                await this.ShowMessageAsync("Error", ex.Message);
+            }
+        }
+
+        private void FileDelete()
+        {
+            var obj = TreeCloud.SelectedItem as CloudItem;
+            if (obj == null)
+            {
+                throw new Exception("Please, select a file first.");
+            }
+            if (obj.data == null)
+            {
+                throw new Exception("You need to select a file, not a folder.");
+            }
+            CloudManager.DeleteFile(obj.data.Value);
+            UpdateTree();
+        }
+
+        private async void FileDelete_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                FileDelete();
+            }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Error", ex.Message);
+            }
+        }
+    }
+}
