@@ -42,6 +42,7 @@ namespace tts_cloud_manager
             name = parentname;
             fullpath = path;
             children = new List<CloudItem>();
+
         }
 
         public void AddChildren(CloudItem child)
@@ -100,7 +101,7 @@ namespace tts_cloud_manager
             }
             catch (Exception ex)
             {
-                await this.ShowMessageAsync("Error", ex.Message);
+                await this.ShowMessageAsync("Error", ex.Message + "\n\n" + ex.StackTrace);
             }
         }
 
@@ -147,7 +148,7 @@ namespace tts_cloud_manager
                 {
                     ex = ((AggregateException)ex).InnerException;
                 }
-                await this.ShowMessageAsync("Error", ex.Message);
+                await this.ShowMessageAsync("Error", ex.Message + "\n\n" + ex.StackTrace);
             }
         }
 
@@ -174,7 +175,7 @@ namespace tts_cloud_manager
             }
             catch (Exception ex)
             {
-                await this.ShowMessageAsync("Error", ex.Message);
+                await this.ShowMessageAsync("Error", ex.Message + "\n\n" + ex.StackTrace);
             }
         }
     }

@@ -19,8 +19,7 @@ namespace tts_cloud_manager
         public string URL;
         public int Size;
         public string Date; // Yep, it's just a string
-        public string Folder; // Optional
-
+        public string Folder;
 
         public CloudData(string name, string url, int size, string date, string folder)
         {
@@ -36,7 +35,7 @@ namespace tts_cloud_manager
     {
         const string TTS_APP_ID = "286160";
 
-        private static T ParseBson<T>(byte[] data)
+        public static T ParseBson<T>(byte[] data)
         {
             using (MemoryStream memoryStream = new MemoryStream(data))
             {
@@ -91,6 +90,31 @@ namespace tts_cloud_manager
             }
         }
 
+        private static CloudItem CreateFather(string path, Dictionary<string, CloudItem> folders)
+        {
+            if (folders.ContainsKey(path))
+            {
+                return folders[path];
+            }
+
+            if (path.Contains('\\'))
+            {
+                int lastindex = path.LastIndexOf('\\');
+                string father = path.Substring(0, lastindex);
+                string child = path.Substring(lastindex + 1);
+
+                folders[path] = new CloudItem(path, child);
+                var parent = CreateFather(father, folders);
+                folders[father].AddChildren(folders[path]);
+                return folders[path];
+            }
+            else
+            {
+                folders[path] = new CloudItem(path, path);
+                folders[""].AddChildren(folders[path]);
+                return folders[path];
+            }
+        }
         public static List<CloudItem> GetCloudData()
         {
             if (!SteamRemoteStorage.FileExists("CloudInfo.bson"))
@@ -105,7 +129,13 @@ namespace tts_cloud_manager
             }
             var data = GetFile("CloudInfo.bson");
             BackupFile("CloudInfo.bson", data);
+
             var cloud_info = ParseBson<Dictionary<string, CloudData>>(data);
+            if (cloud_info == null)
+            {
+                throw new Exception("There's something weird with your CloudInfo.bson, "
+                    + "which is in your local folder. Please, save it and report it to the github page:");
+            }
 
             var folders = new Dictionary<string, CloudItem>();
             var folder_tree = new List<CloudItem>();
@@ -113,32 +143,37 @@ namespace tts_cloud_manager
             folders.Add("", new CloudItem("", "root"));
             folder_tree.Add(folders[""]);
 
-            var cloud_info_list = cloud_info.Values.OrderBy(d => d.Folder.Length);
+            var cloud_info_list = cloud_info.Values.OrderBy(d => string.IsNullOrWhiteSpace(d.Folder) ? 0 : d.Folder.Length);
             foreach (var value in cloud_info_list)
             {
-                if (!folders.ContainsKey(value.Folder))
+                string foldername = string.IsNullOrWhiteSpace(value.Folder) ? "" : value.Folder;
+                if (!folders.ContainsKey(foldername))
                 {
-                    if (value.Folder.Contains('\\'))
+                    if (foldername.Contains('\\'))
                     {
-                        int lastindex = value.Folder.LastIndexOf('\\');
-                        string father = value.Folder.Substring(0, lastindex);
-                        string child = value.Folder.Substring(lastindex + 1);
-                        folders[value.Folder] = new CloudItem(value.Folder, child);
-                        folders[father].AddChildren(folders[value.Folder]);
+                        int lastindex = foldername.LastIndexOf('\\');
+                        string father = foldername.Substring(0, lastindex);
+                        string child = foldername.Substring(lastindex + 1);
+                        folders[foldername] = new CloudItem(foldername, child);
+                        if (!folders.ContainsKey(father))
+                        {
+                            CreateFather(father, folders);
+                        }
+                        folders[father].AddChildren(folders[foldername]);
                     }
-                    else if (value.Folder.Length > 0)
+                    else if (foldername.Length > 0)
                     {
-                        folders[value.Folder] = new CloudItem(value.Folder, value.Folder);
-                        folders[""].AddChildren(folders[value.Folder]);
+                        folders[foldername] = new CloudItem(foldername, foldername);
+                        folders[""].AddChildren(folders[foldername]);
                     }
                     else
                     {
-                        folder_tree.Add(folders[value.Folder]);
+                        folder_tree.Add(folders[foldername]);
                     }
                 }
-                var item = new CloudItem(value.Folder, value.Name);
+                var item = new CloudItem(foldername, value.Name);
                 item.data = value;
-                folders[value.Folder].AddChildren(item);
+                folders[foldername].AddChildren(item);
             }
 
             return folder_tree;
