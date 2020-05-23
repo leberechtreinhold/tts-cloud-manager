@@ -124,6 +124,10 @@ namespace tts_cloud_manager
 
         private async Task UploadData()
         {
+            if (TreeCloud.SelectedItems.Count != 1)
+            {
+                throw new Exception("Please, select a single folder.");
+            }
             var selected = TreeCloud.SelectedItem as TreeNode;
             if (selected == null)
             {
@@ -176,6 +180,10 @@ namespace tts_cloud_manager
 
         private void FileDelete()
         {
+            if (TreeCloud.SelectedItems.Count != 1)
+            {
+                throw new Exception("Please, select a single file.");
+            }
             var obj = TreeCloud.SelectedItem as CloudItem;
             if (obj == null)
             {
