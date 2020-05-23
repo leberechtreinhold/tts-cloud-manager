@@ -115,7 +115,7 @@ namespace tts_cloud_manager
                 return folders[path];
             }
         }
-        public static List<CloudItem> GetCloudData()
+        public static CloudItem GetCloudData()
         {
             if (!SteamRemoteStorage.FileExists("CloudInfo.bson"))
             {
@@ -138,10 +138,9 @@ namespace tts_cloud_manager
             }
 
             var folders = new Dictionary<string, CloudItem>();
-            var folder_tree = new List<CloudItem>();
+            var folder_tree_root = new CloudItem("", "root");
 
-            folders.Add("", new CloudItem("", "root"));
-            folder_tree.Add(folders[""]);
+            folders.Add("", folder_tree_root);
 
             var cloud_info_list = cloud_info.Values.OrderBy(d => string.IsNullOrWhiteSpace(d.Folder) ? 0 : d.Folder.Length);
             foreach (var value in cloud_info_list)
@@ -166,17 +165,14 @@ namespace tts_cloud_manager
                         folders[foldername] = new CloudItem(foldername, foldername);
                         folders[""].AddChildren(folders[foldername]);
                     }
-                    else
-                    {
-                        folder_tree.Add(folders[foldername]);
-                    }
                 }
                 var item = new CloudItem(foldername, value.Name);
                 item.data = value;
+                item.cloud_url = value.URL;
                 folders[foldername].AddChildren(item);
             }
 
-            return folder_tree;
+            return folder_tree_root;
         }
 
         private static void BackupFile(string name, byte[] data)

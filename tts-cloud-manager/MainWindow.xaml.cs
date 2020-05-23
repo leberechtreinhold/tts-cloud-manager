@@ -6,6 +6,7 @@ using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
 using Steamworks;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -22,18 +23,19 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using tts_cloud_manager.tree;
 
 namespace tts_cloud_manager
 {
 
-    public class CloudItem
+    public class CloudItem : ITreeModel
     {
         // Name of the object itself, the name of the file or folder
         public string name { get; set; }
         // Full path of the folder containing the file, or the path 
         // to the folder including itself
         public string fullpath { get; set; }
-        public string cloud_name { get; set; }
+        public string cloud_url { get; set; }
         public CloudData? data { get; set; }
         public IList<CloudItem> children { get; set; }
 
@@ -42,12 +44,26 @@ namespace tts_cloud_manager
             name = parentname;
             fullpath = path;
             children = new List<CloudItem>();
-
+            cloud_url = "";
         }
 
         public void AddChildren(CloudItem child)
         {
             children.Add(child);
+        }
+
+        public IEnumerable GetChildren(object parent)
+        {
+            CloudItem _parent = parent as CloudItem;
+            if (_parent == null) return CloudManager.GetCloudData().children;
+            return _parent.children;
+        }
+
+        public bool HasChildren(object parent)
+        {
+            CloudItem _parent = parent as CloudItem;
+            if (_parent == null) return false;
+            return _parent.children.Count > 0;
         }
     }
 
@@ -72,6 +88,7 @@ namespace tts_cloud_manager
         {
             InitializeComponent();
             this.DataContext = this;
+            GetData();
         }
 
         void NotifiyPropertyChanged(string property)
@@ -90,7 +107,7 @@ namespace tts_cloud_manager
 
         private void UpdateTree()
         {
-            Folders = CloudManager.GetCloudData();
+            TreeCloud.Model = new CloudItem("", "root");
         }
 
         private async void GetData_Click(object sender, RoutedEventArgs e)
@@ -107,7 +124,12 @@ namespace tts_cloud_manager
 
         private async Task UploadData()
         {
-            var obj = TreeCloud.SelectedItem as CloudItem;
+            var selected = TreeCloud.SelectedItem as TreeNode;
+            if (selected == null)
+            {
+                throw new Exception("Please, select a folder first.");
+            }
+            var obj = selected.Tag as CloudItem;
             if (obj == null)
             {
                 throw new Exception("Please, select a folder first.");

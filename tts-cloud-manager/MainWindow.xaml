@@ -5,12 +5,13 @@
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                       mc:Ignorable="d"
                       xmlns:local="clr-namespace:tts_cloud_manager"
+                      xmlns:tree="clr-namespace:tts_cloud_manager.tree"
                       xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                       Title="TTS Cloud Manager"
                       Height="800"
-                      Width="600"
-                      ResizeMode="NoResize">
-    <Grid>
+                      Width="800"
+                      ResizeMode="NoResize">    
+        <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -24,30 +25,49 @@
                 Controls:ButtonHelper.PreserveTextCase="True"
                 Style="{StaticResource AccentedSquareButtonStyle}">
         </Button>
+
         <ScrollViewer Name="Scroll"
                       Grid.Row="1"
                       Margin="10"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Auto">
-            <TreeView Name="TreeCloud" 
-                      ItemsSource="{Binding Folders}"
-                      Style="{StaticResource MetroTreeView}"
-                      Width="500"
-                      Height="600">
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="{x:Type TreeViewItem}">
-                        <Setter Property="IsExpanded"
-                                Value="True" />
-                    </Style>
-                </TreeView.ItemContainerStyle>
-                <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate ItemsSource="{Binding children}"
-                                              DataType="{x:Type local:CloudItem}">
-                        <TextBlock Text="{Binding name}" />
-                    </HierarchicalDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
+            <tree:TreeList x:Name="TreeCloud"
+                           Width="750"
+                           Height="600">
+                <tree:TreeList.View>
+                    <GridView>
+                        <GridView.Columns>
+                            <GridViewColumn Width="300"
+                                            Header="Name">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <tree:RowExpander />
+                                            <TextBlock Text="{Binding name}"></TextBlock>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <GridViewColumn Header="Cloud Name"
+                                            Width="400">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Background="Transparent"
+                                                 BorderThickness="0"
+                                                 Text="{Binding cloud_url, Mode=OneWay}"
+                                                 IsReadOnly="True"
+                                                 TextWrapping="NoWrap" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                        </GridView.Columns>
+                    </GridView>
+                </tree:TreeList.View>
+            </tree:TreeList>
         </ScrollViewer>
+            
         <DockPanel Grid.Row="2">
             <Button Content="Delete"
                     DockPanel.Dock="Left"
