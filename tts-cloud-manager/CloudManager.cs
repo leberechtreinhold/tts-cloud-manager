@@ -169,10 +169,25 @@ namespace tts_cloud_manager
                 var item = new CloudItem(foldername, value.Name);
                 item.data = value;
                 item.cloud_url = value.URL;
+                item.size = byte_size_to_str(value.Size);
                 folders[foldername].AddChildren(item);
             }
 
             return folder_tree_root;
+        }
+
+        private static string byte_size_to_str(int value)
+        {
+            // No need for bigger numbers, steam cloud doesn't support more
+            string[] suffix = { " B", " KB", " MB", " GB", " TB" };
+            double dvalue = value;
+            int scale = 0;
+            while (dvalue > 1024)
+            {
+                dvalue = dvalue / 1024;
+                scale++;
+            }
+            return Math.Round(dvalue, 1) + suffix[scale];
         }
 
         private static void BackupFile(string name, byte[] data)

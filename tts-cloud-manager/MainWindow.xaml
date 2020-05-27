@@ -35,7 +35,7 @@
                            Width="750"
                            Height="600">
                 <tree:TreeList.View>
-                    <GridView>
+                    <GridView >
                         <GridView.Columns>
                             <GridViewColumn Width="300"
                                             Header="Name">
@@ -49,7 +49,20 @@
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <GridViewColumn Header="Cloud Name"
+                            <GridViewColumn Header="Size"
+                                            Width="100">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Background="Transparent"
+                                                 BorderThickness="0"
+                                                 Text="{Binding size, Mode=OneWay}"
+                                                 IsReadOnly="True"
+                                                 TextWrapping="NoWrap" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <GridViewColumn Header="Cloud URL"
                                             Width="400">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>

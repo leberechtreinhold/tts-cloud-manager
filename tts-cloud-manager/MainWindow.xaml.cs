@@ -37,6 +37,8 @@ namespace tts_cloud_manager
         public string fullpath { get; set; }
         public string cloud_url { get; set; }
         public CloudData? data { get; set; }
+        // Size as in "5MB", "700KB"
+        public string size { get; set; }
         public IList<CloudItem> children { get; set; }
 
         public CloudItem(string path, string parentname)
@@ -45,6 +47,7 @@ namespace tts_cloud_manager
             fullpath = path;
             children = new List<CloudItem>();
             cloud_url = "";
+            size = "";
         }
 
         public void AddChildren(CloudItem child)
