@@ -88,7 +88,6 @@ namespace tts_cloud_manager
         {
             InitializeComponent();
             this.DataContext = this;
-            GetData();
         }
 
         void NotifiyPropertyChanged(string property)
