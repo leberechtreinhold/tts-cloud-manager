@@ -105,6 +105,14 @@ namespace tts_cloud_manager
         {
             CloudManager.ConnectToSteam();
             UpdateTree();
+            UpdateQuota();
+        }
+
+        private void UpdateQuota()
+        {
+            ulong consumed_bytes, all_bytes;
+            CloudManager.GetQuota(out consumed_bytes, out all_bytes);
+            lbl_Quota.Content = CloudManager.byte_size_to_str(consumed_bytes) + " of " + CloudManager.byte_size_to_str(all_bytes);
         }
 
         private void UpdateTree()

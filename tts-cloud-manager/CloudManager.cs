@@ -176,7 +176,12 @@ namespace tts_cloud_manager
             return folder_tree_root;
         }
 
-        private static string byte_size_to_str(int value)
+        public static string byte_size_to_str(int value)
+        {
+            return byte_size_to_str((ulong)value);
+        }
+
+        public static string byte_size_to_str(ulong value)
         {
             // No need for bigger numbers, steam cloud doesn't support more
             string[] suffix = { " B", " KB", " MB", " GB", " TB" };
@@ -188,6 +193,13 @@ namespace tts_cloud_manager
                 scale++;
             }
             return Math.Round(dvalue, 1) + suffix[scale];
+        }
+
+        public static void GetQuota(out ulong consumed_bytes, out ulong all_bytes)
+        {
+            ulong available_bytes;
+            SteamRemoteStorage.GetQuota(out all_bytes, out available_bytes);
+            consumed_bytes = all_bytes - available_bytes;
         }
 
         private static void BackupFile(string name, byte[] data)

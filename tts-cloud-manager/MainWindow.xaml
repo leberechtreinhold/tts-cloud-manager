@@ -90,6 +90,7 @@
                     Controls:ButtonHelper.PreserveTextCase="True"
                     Style="{StaticResource AccentedSquareButtonStyle}">
             </Button>
+            <Label Name="lbl_Quota" Margin="20">Quota not calculated</Label>
             <Button Content="Upload"
                     DockPanel.Dock="Right"
                     HorizontalAlignment="Right"
