@@ -194,7 +194,12 @@ namespace tts_cloud_manager
             {
                 throw new Exception("Please, select a single file.");
             }
-            var obj = TreeCloud.SelectedItem as CloudItem;
+            var selected = TreeCloud.SelectedItem as TreeNode;
+            if (selected == null)
+            {
+                throw new Exception("Please, select a file first.");
+            }
+            var obj = selected.Tag as CloudItem;
             if (obj == null)
             {
                 throw new Exception("Please, select a file first.");
