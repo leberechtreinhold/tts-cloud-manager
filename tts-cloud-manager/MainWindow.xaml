@@ -78,6 +78,11 @@
                         </GridView.Columns>
                     </GridView>
                 </tree:TreeList.View>
+                <tree:TreeList.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy as Lua table" Click="CopyLUA_Click"/>
+                    </ContextMenu>
+                </tree:TreeList.ContextMenu>
             </tree:TreeList>
         </ScrollViewer>
             

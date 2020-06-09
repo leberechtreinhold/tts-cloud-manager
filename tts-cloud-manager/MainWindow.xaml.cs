@@ -100,7 +100,7 @@ namespace tts_cloud_manager
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        
+
         private void GetData()
         {
             CloudManager.ConnectToSteam();
@@ -217,6 +217,56 @@ namespace tts_cloud_manager
             try
             {
                 FileDelete();
+            }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Error", ex.Message + "\n\n" + ex.StackTrace);
+            }
+        }
+
+        private void CopyLUA()
+        {
+            if (TreeCloud.SelectedItems.Count < 1)
+            {
+                throw new Exception("Please, select at least one file.");
+            }
+            var items = TreeCloud.SelectedItems;
+            IList<CloudItem> cloud_objs = new List<CloudItem>();
+            foreach (var item in items)
+            {
+                var node = item as TreeNode;
+                if (node == null)
+                {
+                    throw new Exception("Please, select only files.");
+                }
+                var obj = node.Tag as CloudItem;
+                if (obj == null)
+                {
+                    throw new Exception("Please, select only files.");
+                }
+                if (obj.data == null)
+                {
+                    throw new Exception("You need to select a file, not a folder.");
+                }
+                cloud_objs.Add(obj);
+            }
+
+            string[] lua_obj_strs = new string[cloud_objs.Count];
+            int i = 1;
+            foreach (var cloud_obj in cloud_objs)
+            {
+                lua_obj_strs[i-1] = $"\t[{i}] = {{ name = '{cloud_obj.name}', url = '{cloud_obj.cloud_url}' }}";
+                i++;
+            }
+            string final_str = "{\n" + string.Join(",\n", lua_obj_strs) + "\n}";
+            Clipboard.SetText(final_str);
+        }
+
+        private async void CopyLUA_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                CopyLUA();
             }
             catch (Exception ex)
             {
