@@ -58,7 +58,7 @@ namespace tts_cloud_manager
         public IEnumerable GetChildren(object parent)
         {
             CloudItem _parent = parent as CloudItem;
-            if (_parent == null) return CloudManager.GetCloudData().children;
+            if (_parent == null) return new List<CloudItem> { CloudManager.GetCloudData() };
             return _parent.children;
         }
 
