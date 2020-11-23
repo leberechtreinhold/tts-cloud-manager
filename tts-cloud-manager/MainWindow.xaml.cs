@@ -118,6 +118,7 @@ namespace tts_cloud_manager
         private void UpdateTree()
         {
             TreeCloud.Model = new CloudItem("", "root");
+            TreeCloud.SetIsExpanded(TreeCloud.Nodes.First(), true);
         }
 
         private async void GetData_Click(object sender, RoutedEventArgs e)
