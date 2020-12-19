@@ -33,7 +33,8 @@
                       HorizontalScrollBarVisibility="Auto">
             <tree:TreeList x:Name="TreeCloud"
                            Width="750"
-                           Height="600">
+                           Height="600"
+                           SelectionChanged="TreeCloud_SelectionChanged">
                 <tree:TreeList.View>
                     <GridView >
                         <GridView.Columns>

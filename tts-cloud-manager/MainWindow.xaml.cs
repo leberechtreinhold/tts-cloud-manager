@@ -274,5 +274,27 @@ namespace tts_cloud_manager
                 await this.ShowMessageAsync("Error", ex.Message + "\n\n" + ex.StackTrace);
             }
         }
+
+        private async void TreeCloud_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                foreach (var item in e.AddedItems)
+                {
+                    if (item is TreeNode node)
+                    {
+                        if (node.Tag != null && node.Tag is CloudItem clouditem)
+                        {
+                            if (clouditem.children != null && clouditem.children.Count > 0) continue;
+                            Clipboard.SetText(clouditem.data?.URL);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Error", ex.Message + "\n\n" + ex.StackTrace);
+            }
+        }
     }
 }
