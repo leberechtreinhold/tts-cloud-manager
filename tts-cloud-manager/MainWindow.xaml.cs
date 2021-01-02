@@ -189,35 +189,46 @@ namespace tts_cloud_manager
             }
         }
 
-        private void FileDelete()
+        private async Task FileDelete()
         {
-            if (TreeCloud.SelectedItems.Count != 1)
+            var items = TreeCloud.SelectedItems;
+            IList<CloudItem> cloud_objs = new List<CloudItem>();
+            // First validate all
+            foreach (var item in items)
             {
-                throw new Exception("Please, select a single file.");
+                var node = item as TreeNode;
+                if (node == null)
+                {
+                    throw new Exception("Please, select only files.");
+                }
+                var obj = node.Tag as CloudItem;
+                if (obj.data == null)
+                {
+                    throw new Exception("You need to select files, not folders.");
+                }
             }
-            var selected = TreeCloud.SelectedItem as TreeNode;
-            if (selected == null)
+            var progress_bar = await this.ShowProgressAsync("Deleting", "Please wait...");
+            IProgress<double> progress = new Progress<double>(value => progress_bar.SetProgress(value));
+            progress.Report(0.1);
+            int nfiles = items.Count;
+            int files_processed = 0;
+            foreach (var item in items)
             {
-                throw new Exception("Please, select a file first.");
+                var node = item as TreeNode;
+                var obj = node.Tag as CloudItem;
+                CloudManager.DeleteFile(obj.data.Value);
+                files_processed++;
+                progress.Report(0.1 + 0.9 * files_processed / nfiles);
             }
-            var obj = selected.Tag as CloudItem;
-            if (obj == null)
-            {
-                throw new Exception("Please, select a file first.");
-            }
-            if (obj.data == null)
-            {
-                throw new Exception("You need to select a file, not a folder.");
-            }
-            CloudManager.DeleteFile(obj.data.Value);
             UpdateTree();
+            await progress_bar.CloseAsync();
         }
 
         private async void FileDelete_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                FileDelete();
+                await FileDelete();
             }
             catch (Exception ex)
             {
