@@ -167,7 +167,13 @@ namespace tts_cloud_manager
             }
 
             var progress_bar = await this.ShowProgressAsync("Uploading", "Please wait...");
-            IProgress<double> progress = new Progress<double>(value => progress_bar.SetProgress(value));
+            IProgress<double> progress = new Progress<double>(value =>
+            {
+                if (value > 1)
+                    progress_bar.SetProgress(1);
+                else
+                    progress_bar.SetProgress(value);
+            });
             await CloudManager.UploadFiles(upload_folder, dlg.FileNames, progress);
             UpdateTree();
             await progress_bar.CloseAsync();
