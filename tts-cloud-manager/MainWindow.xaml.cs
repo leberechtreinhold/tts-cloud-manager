@@ -104,7 +104,7 @@ namespace tts_cloud_manager
         private void GetData()
         {
             CloudManager.ConnectToSteam();
-            UpdateTree();
+            UpdateTree("");
             UpdateQuota();
         }
 
@@ -115,10 +115,64 @@ namespace tts_cloud_manager
             lbl_Quota.Content = CloudManager.byte_size_to_str(consumed_bytes) + " of " + CloudManager.byte_size_to_str(all_bytes);
         }
 
-        private void UpdateTree()
+        private TreeNode GetNodeFilter(TreeList tree, TreeNode node, string path)
+        {
+            var obj = node.Tag as CloudItem;
+            if (obj == null || obj.data != null)
+            {
+                return null;
+            }
+            if (path == obj.fullpath)
+            {
+                return node;
+            }
+            if (path.StartsWith(obj.fullpath))
+            {
+                TreeCloud.SetIsExpanded(node, true);
+                if (node.Children == null)
+                {
+                    return null;
+                }
+                foreach (var child in node.Children)
+                {
+                    var result = GetNodeFilter(tree, child, path);
+                    if (result != null) return result;
+                }
+            }
+            return null;
+        }
+
+        private TreeNode GetNodeRoot(TreeList t, string path)
+        {
+            if (t.GetChildObjects() == null)
+            {
+                return null;
+            }
+            foreach (var node in t.Nodes)
+            {
+                var result = GetNodeFilter(t, node, path);
+                if (result != null) return result;
+            }
+            return null;
+        }
+
+        private void UpdateTree(string path)
         {
             TreeCloud.Model = new CloudItem("", "root");
-            TreeCloud.SetIsExpanded(TreeCloud.Nodes.First(), true);
+            var node_matching = GetNodeRoot(TreeCloud, path);
+            if (node_matching == null)
+            {
+                // Set the root expanded
+                TreeCloud.SetIsExpanded(TreeCloud.Nodes.First(), true);
+            }
+            else
+            {
+                // Investigate why this doesn't work half of the time... it doesn't scroll enough
+                TreeCloud.UpdateLayout();
+                TreeCloud.ScrollIntoView(node_matching);
+                TreeCloud.SetIsExpanded(node_matching, true);
+            }
+            
         }
 
         private async void GetData_Click(object sender, RoutedEventArgs e)
@@ -175,7 +229,7 @@ namespace tts_cloud_manager
                     progress_bar.SetProgress(value);
             });
             await CloudManager.UploadFiles(upload_folder, dlg.FileNames, progress);
-            UpdateTree();
+            UpdateTree(obj.fullpath);
             await progress_bar.CloseAsync();
         }
 
@@ -226,7 +280,7 @@ namespace tts_cloud_manager
                 files_processed++;
                 progress.Report(0.1 + 0.9 * files_processed / nfiles);
             }
-            UpdateTree();
+            UpdateTree("");
             await progress_bar.CloseAsync();
         }
 
