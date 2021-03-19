@@ -26,7 +26,7 @@ This is a third party tool, and this of course means that there are some risks i
 
 For this reason, consider that this application will in no way guarantee that it will not wreck your game. It does make a backup of the CloudInfo so recovery is possible, but still, there are risks involved. Furthermore, ensure that the version supported is the same that it says here! If TTS updates and changes the format, this could wreck your game.
 
-The current supported TTS version is v12.4.
+The current supported TTS version is v13.
 
 ## For devs
 
